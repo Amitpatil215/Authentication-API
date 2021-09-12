@@ -1,7 +1,10 @@
 const router = require("express").Router();
 const User = require("../model/User");
 const bcrypt = require("bcryptjs");
-const { registerValidation } = require("../validators/validation");
+const {
+  registerValidation,
+  loginValidation,
+} = require("../validators/validation");
 
 router.post("/register", async (req, res) => {
   // Lets Validate User before saving to DB
@@ -26,10 +29,29 @@ router.post("/register", async (req, res) => {
   // Save new user to the database
   try {
     const savedUser = await user.save();
-    res.send(savedUser);
+    res.send({
+      userId: user._id,
+    });
   } catch (err) {
     res.status(400).send(err);
   }
+});
+
+router.post("/login", async (req, res) => {
+  // Validation
+  const { error } = loginValidation(req.body);
+  if (error) return res.status(400).send(error?.details[0]?.message);
+
+  // Check if email exist in database
+  const user = await User.findOne({ email: req.body.email });
+  if (!user)
+    return res.status(400).send("Email Doesn't Exists, Register Instead");
+
+  // Check if password is correct
+  const validPassword = await bcrypt.compare(req.body.password, user.password);
+  if (!validPassword) return res.status(400).send("Invalid Password");
+
+return res.status(200).send("User Logged in!")
 });
 
 module.exports = router;
