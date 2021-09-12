@@ -7,6 +7,7 @@ dotenv.config();
 
 // Import Routes
 const authRoute = require("./routes/auth");
+const postRoute=require("./routes/posts");
 
 //connect to DB
 mongoose.connect(process.env.DB_CONNECT_URL, () => {
@@ -16,7 +17,9 @@ mongoose.connect(process.env.DB_CONNECT_URL, () => {
 // Middleware
 app.use(express.json());
 
+
 //Route Middleware
 app.use("/api/user", authRoute);
+app.use("/api/", postRoute);
 
 app.listen(3000, () => console.log("Server up and running"));
